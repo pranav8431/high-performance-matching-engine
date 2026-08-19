@@ -40,7 +40,9 @@ class MatchingEngine {
                 order.quantity -= traded_quantity;
                 ask_level.reduce_front(traded_quantity);
                 if(ask_level.front().quantity == 0){
+                    uint64_t filled_order_id = ask_level.front().id;
                     ask_level.remove_front();
+                    order_book.remove_from_index(filled_order_id);
                 }
                 if(ask_level.is_empty()){
                     order_book.remove_best_ask_level();
@@ -71,7 +73,9 @@ class MatchingEngine {
                 order.quantity -= traded_quantity;
                 bid_level.reduce_front(traded_quantity);
                 if(bid_level.front().quantity == 0){
+                    uint64_t filled_order_id = bid_level.front().id;
                     bid_level.remove_front();
+                    order_book.remove_from_index(filled_order_id);
                 }
                 if(bid_level.is_empty()){
                     order_book.remove_best_bid_level();
@@ -81,40 +85,4 @@ class MatchingEngine {
                 order_book.add_order(order);
             }
         }
-
-
-        // void match_buy_order(Order& order){
-        //     while(order.quantity > 0 && order_book.has_asks() ){
-        //         PriceLevel& best_ask_level  = order_book.best_ask_level();
-        //         if(order.ordertype == OrderType:: LIMIT && order.price < best_ask_level.get_price()){
-        //             break;
-        //         }
-        //         Order& best_ask_order = best_ask_level.front();
-        //         uint64_t traded_quantity = std::min(order.quantity , best_ask_order.quantity);
-        //         order.quantity -= traded_quantity;
-        //         best_ask_order.quantity -= traded_quantity;
-        //         if(best_ask_order.quantity == 0){
-        //             best_ask_level.remove_front(); 
-        //         }
-        //     }
-        //     if(order.quantity > 0 && order.ordertype == OrderType::LIMIT){
-        //         order_book.add_order(order);
-        //     }
-        // }
-        // void match_sell_order(Order& order){
-        //     while(order.quantity > 0 && order_book.has_bids())
-        //     {
-        //         PriceLevel& best_bid_level = order_book.best_bid_level();
-        //         if(order.ordertype == OrderType::LIMIT && order.price > best_bid_level.get_price()){
-        //             break;
-        //         }
-        //         Order& best_bid_order = best_bid_level.front();
-        //         uint64_t traded_quantity = std::min(order.quantity , best_bid_order.quantity);
-        //         order.quantity -= traded_quantity;
-        //         best_bid_order.quantity -= traded_quantity;
-        //         if(best_bid_order.quantity == 0){
-        //             best_bid_level.remove_front();
-        //         }
-        //     }
-        // }
 };

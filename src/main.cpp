@@ -1,52 +1,38 @@
 #include <iostream>
+
 #include "matching_engine.hpp"
 
 int main() {
     OrderBook book;
     MatchingEngine engine(book);
 
-    // BUY 500 @ 100
+    // Resting sells
     book.add_order({
         1,
-        Side::BUY,
+        Side::SELL,
         OrderType::LIMIT,
         100,
         500
     });
 
-    // BUY 300 @ 99
     book.add_order({
         2,
-        Side::BUY,
+        Side::SELL,
         OrderType::LIMIT,
-        99,
+        101,
         300
     });
 
-    // Incoming SELL 700 @ 99
-    Order sell_order{
+    // Incoming buy
+    Order buy_order{
         3,
-        Side::SELL,
+        Side::BUY,
         OrderType::LIMIT,
-        99,
+        101,
         700
     };
 
-    // engine.process_order(sell_order);
-    auto trades = engine.process_order(sell_order);
-
-    std::cout << "Best Bid after matching: ";
-
-    if (book.has_bids()) {
-        std::cout << book.best_bid() << '\n';
-
-        std::cout << "Remaining quantity at best bid: "
-                  << book.best_bid_level().front().quantity
-                  << '\n';
-    }
-    else {
-        std::cout << "No bids\n";
-    }
+    auto trades = engine.process_order(buy_order);
 
     for (const auto& trade : trades) {
         std::cout << "Trade\n";
@@ -54,6 +40,8 @@ int main() {
         std::cout << "Seller: " << trade.sell_order_id << '\n';
         std::cout << "Price: " << trade.price << '\n';
         std::cout << "Quantity: " << trade.quantity << '\n';
+        std::cout << "----------------\n";
     }
+
     return 0;
 }
