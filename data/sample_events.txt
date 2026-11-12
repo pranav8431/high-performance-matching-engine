@@ -1,6 +1,21 @@
-ADD 1 BUY 100 500
-ADD 2 SELL 102 300
-ADD 3 SELL 101 200
-CANCEL 1
-ADD 4 BUY 101 400
-CANCEL 2
+# Small hand-written scenario. Format: see include/lob/event_parser.hpp
+# Prices are integer ticks (e.g. cents): 10000 = $100.00
+ADD    1 SELL 10020 300
+ADD    2 SELL 10010 200
+ADD    3 SELL 10010 500
+ADD    4 BUY   9990 400
+ADD    5 BUY   9980 600
+ADD    6 BUY   9990 100
+# Aggressive buy sweeps 10010 (orders 2 then 3) and rests 200 @ 10015
+ADD    7 BUY  10015 900
+# Reduce order 7 in place (keeps priority), then cancel order 4
+MODIFY 7 10015 150
+CANCEL 4
+# Market sell takes 150 @ 10015 from order 7 and 100 @ 9990 from order 6
+MARKET 8 SELL 250
+# IOC sell at 9985 fills against nothing (best bid is 9980) and is discarded
+IOC    9 SELL 9985 100
+# FOK buy of 400 at 10020: only 300 available at that price -> killed
+FOK   10 BUY  10020 400
+# Cancel of an unknown id is a no-op
+CANCEL 999

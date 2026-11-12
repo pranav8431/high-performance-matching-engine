@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gcc-release
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            sanitizers: OFF
+          - name: gcc-asan-ubsan
+            cc: gcc
+            cxx: g++
+            build_type: Debug
+            sanitizers: ON
+          - name: clang-release
+            cc: clang
+            cxx: clang++
+            build_type: Release
+            sanitizers: OFF
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DLOB_SANITIZERS=${{ matrix.sanitizers }}
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Smoke-test tools
+        run: |
+          ./build/demo
+          ./build/replay data/sample_events.txt --min-price 1 --max-price 20000
+          ./build/gen_workload /tmp/events.txt 200000 7
+          ./build/replay /tmp/events.txt --quiet
+
+      - name: Short benchmark run (sanity only)
+        if: matrix.sanitizers == 'OFF'
+        run: |
+          ./build/throughput_benchmark 2000000 2000000
+          ./build/cancel_benchmark 1000000 200000

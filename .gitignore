@@ -1,0 +1,15 @@
+# Build output
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+
+# Generated data
+data/*.generated.txt
+*.trades.txt
+
+# Editors / OS
+.idea/
+*.swp
+.DS_Store
